@@ -14,7 +14,15 @@ namespace WebBlazor.Models
             Http = http;
             //Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("","");
             Http.BaseAddress = new System.Uri("http://localhost:8989");
+            http.DefaultRequestHeaders.Add("Authorization", "Bearer ");
             
+        }
+
+        public IDataAccess SetToken(string token)
+        {            
+            Http.DefaultRequestHeaders.Remove("Authorization");
+            Http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return this;
         }
 
         public async Task<T> DeleteAsync<T>(string url, object value = null)
@@ -27,7 +35,7 @@ namespace WebBlazor.Models
             return await Http.GetJsonAsync<T>(url);
         }
 
-        public async Task<T> PostAsync<T>(string url, T value)
+        public async Task<T> PostAsync<T, TValue>(string url, TValue value)
         {
             return await Http.PostJsonAsync<T>(url, value);
         }

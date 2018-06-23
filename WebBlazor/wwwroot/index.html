@@ -12,5 +12,23 @@
     <app>Loading...</app>
 
     <script type="blazor-boot"></script>
+    <script>
+        Blazor.registerFunction("messageShow", (message) => {
+            alert(message);
+            return true;
+        });
+        Blazor.registerFunction("setLocalStorage", (key, value) => {
+            localStorage.removeItem(key);
+            localStorage.setItem(key, value);            
+            return true;
+        });
+        Blazor.registerFunction("getLocalStorage", (key) => {
+            return localStorage.getItem(key);
+        });
+        Blazor.registerFunction("removeLocalStorage", (key) => {
+            localStorage.removeItem(key);
+            return true;
+        });
+    </script>
 </body>
 </html>

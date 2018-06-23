@@ -1,4 +1,8 @@
-﻿namespace Api.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Share
 {
     public class User
     {

@@ -1,79 +1,99 @@
 ﻿@page "/login"
 @layout LoginLayout
 @inject IDataAccess DataAccess
+@inject Microsoft.AspNetCore.Blazor.Services.IUriHelper UriHelper
 
 <style>
 
-body {
-  padding-top: 40px;
-  padding-bottom: 40px;
-  background-color: #eee;
-}
+    body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #eee;
+    }
 
-.form-signin {
-  max-width: 330px;
-  padding: 15px;
-  margin: 0 auto;
-}
-.form-signin .form-signin-heading,
-.form-signin .checkbox {
-  margin-bottom: 10px;
-}
-.form-signin .checkbox {
-  font-weight: normal;
-}
-.form-signin .form-control {
-  position: relative;
-  height: auto;
-  -webkit-box-sizing: border-box;
-     -moz-box-sizing: border-box;
-          box-sizing: border-box;
-  padding: 10px;
-  font-size: 16px;
-}
-.form-signin .form-control:focus {
-  z-index: 2;
-}
-.form-signin input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-.form-signin input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
+    .form-signin {
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+    }
 
+        .form-signin .form-signin-heading,
+        .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+
+        .form-signin .checkbox {
+            font-weight: normal;
+        }
+
+        .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+            .form-signin .form-control:focus {
+                z-index: 2;
+            }
+
+        .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
 </style>
 
 <div class="container">
     <div class="form-signin">
-    <h2 class="form-signin-heading">Login do Usuário</h2>
-    <label for="inputEmail" class="sr-only">Email:</label>
-    <input type="email" bind="UserViewModel.Email" id="Email" class="form-control" placeholder="E-mail" required autofocus/>
-    <label for="inputPassword" class="sr-only">Senha:</label>
-    <input type="password" bind="UserViewModel.Password" id="Password" class="form-control" placeholder="Senha" required/>    
-    <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="@LoginVerify">Entrar</button>
+        <h2 class="form-signin-heading">Login do Usuário</h2>
+        <label for="inputEmail" class="sr-only">Email:</label>
+        <input type="email" bind="UserViewModel.Email" id="Email" class="form-control" placeholder="E-mail" required autofocus />
+        <label for="inputPassword" class="sr-only">Senha:</label>
+        <input type="password" bind="UserViewModel.Password" id="Password" class="form-control" placeholder="Senha" required />
+        <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="@LoginVerify">Entrar</button>
     </div>
 </div>
-
 @functions{
 
-    public class User
+    public User UserViewModel { get; set; } = new User()
     {
-        public string Email {get;set;}
-        public string Password {get;set;}
-    }
-
-    public User UserViewModel { get; set; } = new User();
-
+        Email = "fulviocanducci@hotmail.com",
+        Password = "Ab@123456"
+    };
     public async Task LoginVerify()
     {
-        if (!string.IsNullOrEmpty(UserViewModel.Email) &&
-          !string.IsNullOrEmpty(UserViewModel.Password))
+        try
         {
-            Console.WriteLine(await DataAccess.PostAsync<object>("api/login", UserViewModel));
+            if (!string.IsNullOrEmpty(UserViewModel.Email) && !string.IsNullOrEmpty(UserViewModel.Password))
+            {
+                TokenValidate tokenValidate = await DataAccess.PostAsync<TokenValidate, User>("api/login", UserViewModel);
+                Console.WriteLine(tokenValidate.Authenticated);
+                Console.WriteLine(tokenValidate.Token);
+                if (tokenValidate.Authenticated == 1)
+                {
+                    RegisteredFunction.Invoke<bool>("setLocalStorage", "Bearer", tokenValidate.Token);
+                    RegisteredFunction.Invoke<bool>("messageShow", ("Status: " + tokenValidate.Message));
+                    UriHelper.NavigateTo("/listofreferences");
+                }
+                else
+                {
+                    RegisteredFunction.Invoke<bool>("messageShow", "Error: " + tokenValidate.Message);
+                }
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            RegisteredFunction.Invoke<bool>("messageShow", ex.Message);
         }
     }
 }

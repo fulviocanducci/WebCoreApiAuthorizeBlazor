@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Share;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -26,15 +27,15 @@ namespace Api.Controllers
         {
             await CheckUserCreatedAsync(userManager);
 
-            if (string.IsNullOrEmpty(user.Email)) return NotFound(new { Message = "E-mail invalid" });
-            if (string.IsNullOrEmpty(user.Password)) return NotFound(new { Message = "Password invalid" });
+            if (string.IsNullOrEmpty(user.Email)) return NotFound(TokenValidate.Create(0, "E-mail invalid"));
+            if (string.IsNullOrEmpty(user.Password)) return NotFound(TokenValidate.Create(0, "Password invalid"));
 
             ApplicationUser appUser = await userManager.FindByEmailAsync(user.Email);
 
-            if (appUser == null) return NotFound(new { Message = "User not exists" });
+            if (appUser == null) return NotFound(TokenValidate.Create(0, "User not exists"));
             var result = await signInManager.CheckPasswordSignInAsync(appUser, user.Password, false);
 
-            if (!result.Succeeded) return NotFound(new { Message = "User not credentials" });
+            if (!result.Succeeded) return NotFound(TokenValidate.Create(0, "User not credentials"));
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(new GenericIdentity(appUser.Email, "Login"),
                     new[] {
@@ -47,7 +48,7 @@ namespace Api.Controllers
             SecurityToken securityToken = handler.CreateToken(tokenConfigurations, signingConfigurations, claimsIdentity);
             string token = handler.WriteToken(securityToken);
 
-            return Ok(TokenValidate.Create(true, handler.DateCreateToken(), handler.DateExpirationToken(), token));
+            return Ok(TokenValidate.Create(1, "Login Succeeded", handler.DateCreateToken(), handler.DateExpirationToken(), token));
         }
 
         [NonAction]

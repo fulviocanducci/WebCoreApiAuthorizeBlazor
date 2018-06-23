@@ -1,0 +1,46 @@
+﻿@page "/listofreferences"
+@inject IDataAccess DataAccess
+@inject Microsoft.AspNetCore.Blazor.Services.IUriHelper UriHelper
+
+@if (ListItems == null)
+{
+    <p>Aguarde ...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (References item in ListItems)
+            {
+            <tr>
+                <td width="12%">@item.Id</td>
+                <td width="88%">@item.Description</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions { 
+
+    protected References[] ListItems;
+
+    protected override async Task OnInitAsync()
+    {
+        await LoadListOfReferencesAsync();
+    }
+
+    public async Task LoadListOfReferencesAsync()
+    {
+        ListItems = await DataAccess
+            .SetToken(RegisteredFunction.Invoke<string>("getLocalStorage", "Bearer"))
+            .GetAsync<References[]>("api/references");
+        StateHasChanged();
+    }
+}
