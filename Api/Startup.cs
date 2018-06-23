@@ -84,7 +84,9 @@ namespace Api
                     .RequireAuthenticatedUser().Build());
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services
+                .AddMvc()                
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);                
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -106,6 +108,13 @@ namespace Api
             app.UseCookiePolicy();
 
             app.UseAuthentication();
+
+            app.UseCors(x =>
+            {
+                x.AllowAnyHeader();
+                x.AllowAnyMethod();
+                x.AllowAnyOrigin();                
+            });
 
             app.UseMvc(routes =>
             {

@@ -11,7 +11,7 @@ namespace WebBlazor
         {
             var serviceProvider = new BrowserServiceProvider(services =>
             {
-                // Add any custom services here
+                services.AddScoped<Models.IDataAccess, Models.DataAccess>();
             });
 
             new BrowserRenderer(serviceProvider).AddComponent<App>("app");

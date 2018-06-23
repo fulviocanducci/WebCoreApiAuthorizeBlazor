@@ -1,6 +1,6 @@
 ﻿@page "/login"
 @layout LoginLayout
-@inject HttpClient Client
+@inject IDataAccess DataAccess
 
 <style>
 
@@ -59,21 +59,21 @@ body {
 </div>
 
 @functions{
-    
-    public class User 
-    {
-      public string Email {get;set;}
-      public string Password {get;set;}
-    }
-    
-    public User UserViewModel {get;set;}
 
-    public void LoginVerify()
+    public class User
     {
-        if (!string.IsNullOrEmpty(UserViewModel.Email) && 
+        public string Email {get;set;}
+        public string Password {get;set;}
+    }
+
+    public User UserViewModel { get; set; } = new User();
+
+    public async Task LoginVerify()
+    {
+        if (!string.IsNullOrEmpty(UserViewModel.Email) &&
           !string.IsNullOrEmpty(UserViewModel.Password))
         {
-           
+            Console.WriteLine(await DataAccess.PostAsync<object>("api/login", UserViewModel));
         }
     }
 }
